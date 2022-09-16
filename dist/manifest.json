@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Timely",
+  "description": "Track the time for your favourite procrastination methods",
+  "version": "1.0.0",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Timely"
+  }
+}

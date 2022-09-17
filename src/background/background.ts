@@ -1,0 +1,1 @@
+console.log('backgorund script')

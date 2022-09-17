@@ -16,7 +16,7 @@ __webpack_require__.r(__webpack_exports__);
 const test = react__WEBPACK_IMPORTED_MODULE_0__.createElement("img", { src: "icon.png" });
 const root = document.createElement('div');
 document.body.appendChild(root);
-react_dom__WEBPACK_IMPORTED_MODULE_1__.render(test, document.body);
+react_dom__WEBPACK_IMPORTED_MODULE_1__.render(test, root);
 
 
 /***/ })

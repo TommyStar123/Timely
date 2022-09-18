@@ -1,1 +1,0 @@
-{"version":3,"file":"contentScript.js","mappings":";;;;;AAAA","sources":["webpack://timely/./src/contentScript/contentScript.ts"],"sourcesContent":["console.log('contentScript running!');\r\n"],"names":[],"sourceRoot":""}

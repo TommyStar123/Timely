@@ -1,1 +1,0 @@
-{"version":3,"file":"background.js","mappings":";;;;;AAAA","sources":["webpack://timely/./src/background/background.ts"],"sourcesContent":["console.log('backgorund script');\r\n"],"names":[],"sourceRoot":""}

@@ -3,6 +3,15 @@ import { getStorageTabs, setStorageTabs } from '../utils/storage'
 const DOMAIN_REGEX =
   /(?:[-a-zA-Z0-9@:%_\+~.#=]{2,256}\.)?([-a-zA-Z0-9@:%_\+~#=]*)\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/i
 
+// chrome.runtime.onInstalled.addListener(async () => {
+//   console.log('INSTALLED')
+//   let url = chrome.runtime.getURL('install.tsx')
+//   let tab = await chrome.tabs.create({ url })
+//   await chrome.storage.local.set({
+//     allTabs: [],
+//   })
+// })
+
 chrome.storage.local.set({
   allTabs: [],
 })
@@ -52,7 +61,6 @@ async function oldTab(newDom: string) {
 async function pushTab(tab: tabObj) {
   if (lastUrl != tab.url || lastTitle != tab.title) {
     if (await oldTab(tab.domain)) {
-      console.log('loop')
       lastUrl = tab.url
       lastTitle = tab.title
       let allTabs: tabObj[] = await getStorageTabs('allTabs')
@@ -89,13 +97,16 @@ async function changePrevTab() {
     return
   }
   activeTabId = tab.id
+  let url = new URL(tab.url)
   prevTab = {
     id: tab.id,
-    domain: `${tab.url.match(DOMAIN_REGEX)[1]}`,
+    domain: url.hostname,
+    // domain: `${tab.url.match(DOMAIN_REGEX)[1]}`,
     url: tab.url,
     sec: 0,
     title: tab.title,
   }
+
   seconds = 0
   timer = setInterval(() => {
     seconds++

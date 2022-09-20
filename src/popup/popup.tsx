@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useAsync } from 'react-async'
 import ReactDOM from 'react-dom'
 import Button from 'react-bootstrap/Button'
 import Table from 'react-bootstrap/Table'
@@ -15,46 +16,36 @@ interface tabObj {
   sec: number
 }
 
-let Tabs: tabObj[]
-
-// async function getTabs() {
-//   Tabs = await getStorageTabs('allTabs')
-//   console.log('getting ' + Tabs)
-// }
-
 const App: React.FC<{}> = () => {
-  const [allTabs] = useState<tabObj[]>([])
+  const [allTabs, setAllTabs] = useState<tabObj[]>([])
   useEffect(() => {
-    console.log('HI')
-    getStorageTabs('allTabs').then((allTabs) => {
-      if (allTabs) {
-        console.log(allTabs)
-      } else {
-        console.log('UHOH')
-      }
+    getStorageTabs('allTabs').then((tabs) => {
+      setAllTabs(tabs)
     })
-  })
+  }, [])
+  useEffect(() => {
+    setStorageTabs(allTabs)
+  }, [allTabs])
+  if (!allTabs) {
+    return null
+  }
   return (
     <Table striped bordered size="sm">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Tab Name</th>
-          <th>Tab Url</th>
-          <th>Tracked</th>
+          <th>Name</th>
+          <th>Domain</th>
+          <th>Time</th>
         </tr>
       </thead>
       <tbody>
-        {allTabs?.map(function (tab, i) {
-          return (
-            <tr>
-              <td key={i}>{tab.url}</td>
-              <td key={i}>{tab.title}</td>
-              <td key={i}>{tab.url}</td>
-              <td key={i}>true</td>
-            </tr>
-          )
-        })}
+        {allTabs?.map((tab, i) => (
+          <tr>
+            <td key={i}>{tab.title}</td>
+            <td key={i}>{tab.domain}</td>
+            <td key={i}>{tab.sec}</td>
+          </tr>
+        ))}
       </tbody>
     </Table>
   )
@@ -63,9 +54,3 @@ const App: React.FC<{}> = () => {
 const root = document.createElement('div')
 document.body.appendChild(root)
 ReactDOM.render(<App />, root)
-// if (Tabs) {
-//   ReactDOM.render(<App />, root)
-// } else {
-//   getTabs
-//   ReactDOM.render(<App />, root)
-// }

@@ -6,7 +6,7 @@ interface tabObj {
   sec: number
 }
 
-export const getStorageTabs = async (key: string): Promise<tabObj[]> => {
+export function getStorageTabs(key: string): Promise<tabObj[]> {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get([key], function (result) {
       if (result[key] === undefined) {
@@ -18,14 +18,15 @@ export const getStorageTabs = async (key: string): Promise<tabObj[]> => {
   })
 }
 
-export const setStorageTabs = async (arr: tabObj[]) => {
+export function setStorageTabs(arr: tabObj[]): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set(
       {
         allTabs: arr,
       },
       function () {
-        console.log(arr)
+        console.log(arr ?? [])
+        resolve()
       }
     )
   })

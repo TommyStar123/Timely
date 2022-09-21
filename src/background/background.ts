@@ -92,15 +92,19 @@ async function changePrevTab() {
   clearInterval(timer)
   console.log(`The total time was: ${seconds} seconds`)
   let tab = await getCurrentTab()
-  if (tab.url.includes('.') === false) {
-    console.log('invalid tab')
-    return
-  }
+  // if (tab.url.includes('.') === false) {
+  //   console.log('invalid tab')
+  //   return
+  // }
   activeTabId = tab.id
   let url = new URL(tab.url)
+  let hostname = url.hostname
+  if (hostname.length > 19) {
+    hostname = hostname.slice(0, 20) + '..'
+  }
   prevTab = {
     id: tab.id,
-    domain: url.hostname,
+    domain: hostname,
     // domain: `${tab.url.match(DOMAIN_REGEX)[1]}`,
     url: tab.url,
     sec: 0,

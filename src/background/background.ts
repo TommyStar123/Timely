@@ -35,7 +35,7 @@ let prevTab = {
   domain: '',
   url: '',
   title: '',
-  sec: 0,
+  sec: -1,
 }
 
 async function getCurrentTab() {
@@ -114,7 +114,7 @@ async function changePrevTab() {
 }
 
 chrome.tabs.onActivated.addListener(async function () {
-  if (prevTab.url === '') {
+  if (prevTab.sec === -1) {
     console.log('starting tab')
     await changePrevTab()
   } else {

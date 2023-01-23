@@ -17,18 +17,22 @@ interface tabObj {
 }
 
 const App: React.FC<{}> = () => {
-  const [allTabs, setAllTabs] = useState<tabObj[]>([])
+  const [allTabs, setAllTabs] = useState<tabObj[]>([]);
+  const [currTab, setCurrTab] = useState<tabObj>(getStorageTabs('currTab'));
   useEffect(() => {
-    getStorageTabs('allTabs').then((tabs) => {
-      setAllTabs(tabs)
+    getStorageTabs('allTabs').then((tabs: tabObj[]) => {
+      setAllTabs(tabs);
+    })
+    getStorageTabs('currTab').then((tab: tabObj) => {
+      setCurrTab(tab);
     })
   }, [])
-  useEffect(() => {
-    setStorageTabs(allTabs)
-  }, [allTabs])
-  if (!allTabs) {
-    return null
-  }
+  // useEffect(() => {
+  //   setStorageTabs(allTabs)
+  // }, [allTabs])
+  // if (!allTabs) {
+  //   return null
+  // }
   return (
     <Table striped bordered size="sm">
       <thead>
@@ -39,11 +43,16 @@ const App: React.FC<{}> = () => {
         </tr>
       </thead>
       <tbody>
-        {allTabs?.map((tab, i) => (
-          <tr>
-            <td key={i}>{tab.title}</td>
-            <td key={i}>{tab.domain}</td>
-            <td key={i}>{tab.sec}</td>
+         <tr>
+          <th>{currTab.title}</th>
+          <th>{currTab.domain}</th>
+          <th>{currTab.sec}</th>
+        </tr>
+        {allTabs?.map((tab) => (
+          <tr key={tab.id}>
+            <td >{tab.title}</td>
+            <td >{tab.domain}</td>
+            <td >{tab.sec}</td>
           </tr>
         ))}
       </tbody>

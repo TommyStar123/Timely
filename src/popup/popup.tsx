@@ -6,7 +6,7 @@ import Table from 'react-bootstrap/Table'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 
-import { getStorageTabs, setStorageTabs } from '../utils/storage'
+import { getVal, setVal } from '../utils/storage'
 
 interface tabObj {
   id: number
@@ -18,12 +18,12 @@ interface tabObj {
 
 const App: React.FC<{}> = () => {
   const [allTabs, setAllTabs] = useState<tabObj[]>([]);
-  const [currTab, setCurrTab] = useState<tabObj>(getStorageTabs('currTab'));
+  const [currTab, setCurrTab] = useState<tabObj>(getVal('currTab'));
   useEffect(() => {
-    getStorageTabs('allTabs').then((tabs: tabObj[]) => {
+    getVal('allTabs').then((tabs: tabObj[]) => {
       setAllTabs(tabs);
     })
-    getStorageTabs('currTab').then((tab: tabObj) => {
+    getVal('currTab').then((tab: tabObj) => {
       setCurrTab(tab);
     })
   }, [])

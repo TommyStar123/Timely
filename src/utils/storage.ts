@@ -6,7 +6,7 @@ interface tabObj {
   sec: number
 }
 
-export function getStorageTabs(key: string): any{
+export function getVal(key: string): any{
   return new Promise((resolve, reject) => {
     chrome.storage.local.get([key], function (result) {
       if (result[key] === undefined) {
@@ -18,29 +18,17 @@ export function getStorageTabs(key: string): any{
   })
 }
 
-export function setStorageTabs(arr: tabObj[]): Promise<void> {
+export function setVal(key: string, val: any): Promise<void> {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set(
       {
-        allTabs: arr
+        [key]: val
       },
       function () {
-        console.log(arr ?? [])
-        resolve()
+        resolve();
       }
     )
   })
 }
 
-export function setCurrentTab(currTab: tabObj): Promise<void> {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.set(
-      {
-        currTab: currTab
-      },
-      function () {
-        resolve()
-      }
-    )
-  })
-}
+

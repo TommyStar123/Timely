@@ -1,20 +1,4 @@
-import { getStorageTabs, setStorageTabs, setCurrentTab } from '../utils/storage'
-
-const DOMAIN_REGEX =
-  /(?:[-a-zA-Z0-9@:%_\+~.#=]{2,256}\.)?([-a-zA-Z0-9@:%_\+~#=]*)\.[a-z]{2,6}\b(?:[-a-zA-Z0-9@:%_\+.~#?&\/\/=]*)/i
-
-// chrome.runtime.onInstalled.addListener(async () => {
-//   console.log('INSTALLED')
-//   let url = chrome.runtime.getURL('install.tsx')
-//   let tab = await chrome.tabs.create({ url })
-//   await chrome.storage.local.set({
-//     allTabs: [],
-//   })
-// })
-
-chrome.storage.local.set({
-  allTabs: [],
-})
+import { getVal, setVal } from '../utils/storage'
 
 interface tabObj {
   id: number
@@ -24,19 +8,22 @@ interface tabObj {
   sec: number
 }
 
-let activeTabId,
-  lastUrl: string,
-  lastTitle,
-  timer,
-  seconds = 0
-
-let prevTab = {
-  id: 0,
-  domain: '',
-  url: '',
-  title: '',
-  sec: -1
+function getTime () {
+  return Math.floor(Date.now() / 1000)
 }
+
+chrome.runtime.onInstalled.addListener(async () => {
+  console.log('INSTALLED');
+  // let url = chrome.runtime.getURL('install.tsx')
+  // let tab = await chrome.tabs.create({ url })
+  setVal("allTabs", []);
+  setVal("prevTab", {id: 0, domain: '', url: '', title: '', sec: -1 });
+  setVal("pastTime", getTime());
+  setVal("lastUrl", '');
+  setVal("lastTitle", '');
+})
+
+
 
 async function getCurrentTab() {
   let queryOptions = { active: true, lastFocusedWindow: true }
@@ -45,7 +32,7 @@ async function getCurrentTab() {
 }
 
 async function oldTab(newDom: string) {
-  let allTabs: tabObj[] = await getStorageTabs('allTabs');
+  let allTabs: tabObj[] = await getVal('allTabs');
   if (allTabs.length != 0) {
     for (let i = 0; i < allTabs.length; i++) {
       if (allTabs[i].domain === newDom) {
@@ -59,22 +46,23 @@ async function oldTab(newDom: string) {
 }
 
 async function pushTab(tab: tabObj) {
+  let lastUrl = await getVal("lastUrl");
+  let lastTitle = await getVal("lastTitle");
   if (lastUrl != tab.url || lastTitle != tab.title) {
     if (await oldTab(tab.domain)) {
-      lastUrl = tab.url;
-      lastTitle = tab.title;
-      let allTabs: tabObj[] = await getStorageTabs('allTabs');
+      setVal("lastUrl", tab.url);
+      setVal("lastTitle", tab.title);
+      let allTabs: tabObj[] = await getVal('allTabs');
       for (let i = 0; i < allTabs.length; i++) {
         if (tab.domain === allTabs[i].domain) {
           allTabs[i].sec += tab.sec;
-          await setStorageTabs(allTabs);
+          setVal("allTabs", allTabs);
         }
       }
     } else {
-      console.log('here');
-      lastUrl = tab.url;
-      lastTitle = tab.title;
-      let allTabs: tabObj[] = await getStorageTabs('allTabs');
+      setVal("lastUrl", tab.url);
+      setVal("lastTitle", tab.title);
+      let allTabs: tabObj[] = await getVal('allTabs');
       const newTab = {
         id: tab.id,
         domain: tab.domain,
@@ -83,57 +71,54 @@ async function pushTab(tab: tabObj) {
         sec: tab.sec,
       }
       allTabs.push(newTab);
-      await setStorageTabs(allTabs);
+      setVal("allTabs", allTabs);
     }
   }
 }
 
 async function changePrevTab() {
-  clearInterval(timer);
-  console.log(`The total time was: ${seconds} seconds`);
   let tab = await getCurrentTab();
   // if (tab.url.includes('.') === false) {
   //   console.log('invalid tab')
   //   return
   // }
-  activeTabId = tab.id;
+  setVal("activeTabId", tab.id);
   let url = new URL(tab.url);
   let hostname = url.hostname;
-  prevTab = {
+  setVal("prevTab", {
     id: tab.id,
     domain: hostname,
-    // domain: `${tab.url.match(DOMAIN_REGEX)[1]}`,
     url: tab.url,
     sec: 0,
     title: tab.title,
-  }
-
-  seconds = 0;
-  timer = setInterval(() => {
-    seconds++;
-  }, 1000)
+  });
 }
 
 chrome.tabs.onActivated.addListener(async function () {
   let currTab = await getCurrentTab();
   let url = new URL(currTab.url);
   let hostname = url.hostname;
-  await setCurrentTab({ id: currTab.id, domain: hostname, url: currTab.url, sec: 0, title: currTab.title });
+  setVal("currTab", { id: currTab.id, domain: hostname, url: currTab.url, sec: 0, title: currTab.title });
+  let prevTab:tabObj = await getVal("prevTab");
   if (prevTab.sec === -1) {
     console.log('starting tab');
     await changePrevTab();
   } else {
     let tempTab = prevTab;
-    tempTab.sec = seconds;
+    let pastTime = await getVal("pastTime");
+    console.log(`The total time was: ${getTime() - pastTime} seconds`);
+    tempTab.sec = getTime() - pastTime;
+    setVal("pastTime", getTime());
     await changePrevTab();
     await pushTab(tempTab);
   }
 })
 
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
-  if (activeTabId === tabId && tab.status === 'complete') {
+  if (await getVal("activeTabId") === tabId && tab.status === 'complete') {
+    let prevTab:tabObj = await getVal("prevTab");
     let tempTab = prevTab;
-    tempTab.sec = seconds;
+    tempTab.sec = getTime() - await getVal("pastTime");
     await changePrevTab();
     await pushTab(tempTab);
   }

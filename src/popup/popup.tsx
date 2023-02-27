@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { useAsync } from 'react-async'
 import ReactDOM from 'react-dom'
-import Button from 'react-bootstrap/Button'
 import Table from 'react-bootstrap/Table'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './popup.css'
 
-import { getVal, setVal } from '../utils/storage'
-import { getTime } from '../utils/time'
+import { getVal } from '../utils/storage'
+import { getTime } from '../utils/helper'
 
 interface tabObj {
   id: number
@@ -74,7 +73,6 @@ const App: React.FC<{}> = () => {
       </thead>
       <tbody>
          <tr>
-
           { (currTab.title ? (currTab.title.length > 30) : (false)) ? (
             <th>{currTab.title.substring(0, 31)}...</th>
           ):(
@@ -92,7 +90,6 @@ const App: React.FC<{}> = () => {
         </tr>
         {allTabs?.map((tab) => (
           <tr key={tab.domain}>
-
             { (tab.title ? (tab.title.length > 30) : (false)) ? (
               <td>{tab.title.substring(0, 31).trim()}...</td>
             ):(

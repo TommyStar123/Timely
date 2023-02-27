@@ -1,5 +1,5 @@
 import { getVal, setVal } from '../utils/storage'
-import { getTime } from '../utils/time'
+import { getTime, getDomain } from '../utils/helper'
 
 interface tabObj {
   id: number
@@ -9,8 +9,11 @@ interface tabObj {
   sec: number
 }
 
-chrome.runtime.onInstalled.addListener(async () => {
-  console.log('INSTALLED');
+chrome.runtime.onInstalled.addListener(async ({reason}) => {
+  // if (reason === 'install'){
+  //   chrome.runtime.openOptionsPage();
+  // }
+  chrome.runtime.openOptionsPage();
   // let url = chrome.runtime.getURL('install.tsx')
   // let tab = await chrome.tabs.create({ url })
   // await setVal("allTabs", []);
@@ -18,6 +21,7 @@ chrome.runtime.onInstalled.addListener(async () => {
   await setVal("pastTime", getTime());
   await setVal("lastUrl", '');
   await setVal("lastTitle", '');
+  await setVal("trackedDomains", []);
 })
 
 
@@ -79,11 +83,7 @@ async function changePrevTab() {
   //   return
   // }
   await setVal("activeTabId", tab.id);
-  let hostname = "No Domain Found";
-  if(tab.url){
-    let url = new URL(tab.url);
-    hostname = url.hostname;
-  }
+  let hostname = getDomain(tab.url);
   await setVal("prevTab", {
     id: tab.id,
     domain: hostname,
@@ -95,12 +95,8 @@ async function changePrevTab() {
 
 chrome.tabs.onActivated.addListener(async function () {
   let currTab = await getCurrentTab();
-  let hostname = "No Domain Found";
+  let hostname = getDomain(currTab.url);
   let title = "Invalid Tab";
-  if(currTab.url){
-    let url = new URL(currTab.url);
-    hostname = url.hostname;
-  }
   if(currTab.title){
     title = currTab.title;
   }

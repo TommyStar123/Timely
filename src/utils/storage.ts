@@ -19,7 +19,8 @@ export function getVal(key: string): any{
 }
 
 export function setVal(key: string, val: any): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
+
     chrome.storage.local.set(
       {
         [key]: val

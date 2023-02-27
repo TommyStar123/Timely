@@ -1,3 +1,7 @@
-.tableCol{
+.secCol{
     min-width: 10rem;
+}
+
+.domCol{
+    width: 5rem;
 }

@@ -11,7 +11,8 @@ interface tabObj {
 
 chrome.runtime.onInstalled.addListener(async ({reason}) => {
   // if (reason === 'install'){
-  //   chrome.runtime.openOptionsPage();
+  //  chrome.runtime.openOptionsPage();
+  //  await setVal("trackedDomains", []);
   // }
   chrome.runtime.openOptionsPage();
   // let url = chrome.runtime.getURL('install.tsx')
@@ -21,7 +22,7 @@ chrome.runtime.onInstalled.addListener(async ({reason}) => {
   await setVal("pastTime", getTime());
   await setVal("lastUrl", '');
   await setVal("lastTitle", '');
-  await setVal("trackedDomains", []);
+  console.log(await getVal("trackedDomains"));
 })
 
 
@@ -121,6 +122,7 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     let prevTab:tabObj = await getVal("prevTab");
     let tempTab = prevTab;
     tempTab.sec = getTime() - await getVal("pastTime");
+    await setVal("pastTime", getTime());
     await changePrevTab();
     await pushTab(tempTab);
   }

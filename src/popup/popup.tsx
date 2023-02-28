@@ -56,12 +56,6 @@ const App: React.FC<{}> = () => {
     return () => clearInterval(interval);
   }, []);
   
-  // useEffect(() => {
-  //   setStorageTabs(allTabs)
-  // }, [allTabs])
-  // if (!allTabs) {
-  //   return null
-  // }
   return (
     <Table responsive="sm" bordered size="md">
       <thead>

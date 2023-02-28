@@ -7,7 +7,7 @@ import Card from 'react-bootstrap/Card'
 import CardGroup from 'react-bootstrap/CardGroup';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
-import { Col, Row } from 'react-bootstrap'
+import { Col, Row, Table } from 'react-bootstrap'
 import './options.css'
 
 import { getVal, setVal } from '../utils/storage'
@@ -145,8 +145,8 @@ class NameForm extends React.Component <{}, domainsFormState> {
         return(
             <div className='flex'>
                 <CardGroup>
-                <Card style={{ width: "44rem"}} bg='dark' text='light'>
-                    <Card.Header as="h5"><img width={20} height={20} src={require('../static/icon.png')} style={{ marginTop: '-0.2rem', marginRight: '0.2rem'}}></img> Timely - Website Tracking</Card.Header>
+                <Card style={{ width: "44rem", borderColor: "white"}} bg='dark' text='light'>
+                    <Card.Header as="h5" style={{borderColor: "white"}}><img width={20} height={20} src={require('../static/icon.png')} style={{ marginTop: '-0.2rem', marginRight: '0.2rem'}}></img> Timely - Website Tracking</Card.Header>
                     <Card.Body>
                         <Card.Text as="div">
                             <Form onSubmit={this.handleSubmit}>
@@ -197,29 +197,35 @@ class NameForm extends React.Component <{}, domainsFormState> {
                         </Card.Text>
                     </Card.Body>
                 </Card>
-                <Card text='light' bg='dark'>
-                    <Card.Header as="h5" style={{height: '41px'}}></Card.Header>
+                <Card bg='dark' text='light' style={{borderColor: "white"}}>
+                    <Card.Header as="h5" style={{height: '41px', borderColor: "white"}}></Card.Header>
                     <Card.Body>
-                        <div className='fs-6 mb-2'>Domains You Are About to Track: </div>
-                        <ul>
-                            {this.state.newDomains.length === 0 ? (
-                                <li>None</li>
-                            ) : (
-                                (this.state.newDomains).map((domain, index) => {
-                                    return <li key={domain}>{domain}</li>
-                                })
-                            )}
-                        </ul>
-                        <div className='fs-6 mb-2'>Your Currently Tracked Domains: </div>
-                        <ul>
-                            {this.state.domains.length === 0 ? (
-                                <li>None</li>
-                            ) : (
-                                (this.state.domains).map((domain, index) => {
-                                    return <li key={domain}>{domain}</li>
-                                })
-                            )}
-                        </ul>
+                        <Row className="g-1">
+                            <div className="col-6">
+                                <div className='fs-6 mb-2'>Domains You Are About to Track: </div>
+                                <ul>
+                                    {this.state.newDomains.length === 0 ? (
+                                        <li>None</li>
+                                    ) : (
+                                        (this.state.newDomains).map((domain, index) => {
+                                            return <li key={domain}>{domain}</li>
+                                        })
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="col-6">
+                               <div className='fs-6 mb-2'>Your Currently Tracked Domains: </div>
+                                 <ul>
+                                {this.state.domains.length === 0 ? (
+                                    <li>None</li>
+                                ) : (
+                                    (this.state.domains).map((domain, index) => {
+                                        return <li key={domain}>{domain}</li>
+                                    })
+                                )}
+                                </ul>
+                            </div>
+                        </Row>
                     </Card.Body>
                 </Card>
                 </CardGroup>

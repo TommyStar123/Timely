@@ -151,9 +151,10 @@ class NameForm extends React.Component <{}, domainsFormState> {
                         <Card.Text as="div">
                             <Form onSubmit={this.handleSubmit}>
                                 <Form.Group className="mb-3">
-                                    <Form.Label>Commonly Tracked Domains: </Form.Label>
-                                    {[...this.commonSites.keys()].map((site) => (
-                                        // <div  className="mb-2">
+                                    <Form.Label>Commonly Tracked Domains: </Form.Label><br></br>
+                                    <Row>
+                                    {[...this.commonSites.keys()].map((site, index) => (
+                                        <div className="col-3">
                                             <Form.Check 
                                                 key={site}
                                                 type="checkbox"
@@ -163,9 +164,12 @@ class NameForm extends React.Component <{}, domainsFormState> {
                                                 checked={this.state[site]} 
                                                 aria-describedby="track${site}"
                                                 onChange={this.handleChange}
+                                                inline 
                                             />
-                                        // </div>
+                                        {index + 1 % 4 === 0 ? (<br></br>) : (null)}
+                                        </div>
                                     ))}
+                                    </Row>
                                 </Form.Group>
                                 <Form.Label htmlFor="url">Enter the URL of the website you would like to track:</Form.Label>
                                 <Form.Group as={Row} className="mb-3 g-1"> 

@@ -145,7 +145,7 @@ class NameForm extends React.Component <{}, domainsFormState> {
         return(
             <div className='flex'>
                 <CardGroup>
-                <Card style={{ width: "44rem"}}>
+                <Card style={{ width: "44rem"}} bg='dark' text='light'>
                     <Card.Header as="h5"><img width={20} height={20} src={require('../static/icon.png')} style={{ marginTop: '-0.2rem', marginRight: '0.2rem'}}></img> Timely - Website Tracking</Card.Header>
                     <Card.Body>
                         <Card.Text as="div">
@@ -197,7 +197,7 @@ class NameForm extends React.Component <{}, domainsFormState> {
                         </Card.Text>
                     </Card.Body>
                 </Card>
-                <Card>
+                <Card text='light' bg='dark'>
                     <Card.Header as="h5" style={{height: '41px'}}></Card.Header>
                     <Card.Body>
                         <div className='fs-6 mb-2'>Domains You Are About to Track: </div>

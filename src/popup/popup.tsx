@@ -18,15 +18,15 @@ interface tabObj {
 }
 
 function formatSec(x) {
-  x= Number(x); 
-  let d=Math.floor(x / (24*3600)); 
-  let h=Math.floor(x % (3600*24) / 3600 ); 
-  let m=Math.floor(x % 3600 / 60); 
-  let s=Math.floor(x % 3600 % 60); 
-  let dDisplay=d>0? d + (d==1? " day" : " days") + (h>0 || m > 0 || s > 0 ? ", ":"") : ""; 
-  let hDisplay=h>0? h + (h==1? " hr" : " hrs") + (m > 0 || s > 0 ? ", ":"") : ""; 
-  let mDisplay=m>0? m + (m==1? " min" : " mins") + (s >= 0 ? ", ":"") : ""; 
-  let sDisplay=s>=0? s + (s==1? " sec" : " secs") : ""; 
+  x = Number(x);
+  let d = Math.floor(x / (24 * 3600));
+  let h = Math.floor(x % (3600 * 24) / 3600);
+  let m = Math.floor(x % 3600 / 60);
+  let s = Math.floor(x % 3600 % 60);
+  let dDisplay = d > 0 ? d + (d == 1 ? " day" : " days") + (h > 0 || m > 0 || s > 0 ? ", " : "") : "";
+  let hDisplay = h > 0 ? h + (h == 1 ? " hr" : " hrs") + (m > 0 || s > 0 ? ", " : "") : "";
+  let mDisplay = m > 0 ? m + (m == 1 ? " min" : " mins") + (s >= 0 ? ", " : "") : "";
+  let sDisplay = s >= 0 ? s + (s == 1 ? " sec" : " secs") : "";
   return dDisplay + hDisplay + mDisplay + sDisplay;
 }
 
@@ -45,17 +45,17 @@ const App: React.FC<{}> = () => {
 
   useEffect(() => {
     getVal('pastTime').then((sec: number) => {
-          setSeconds(getTime() - sec);
+      setSeconds(getTime() - sec);
     })
     const interval = setInterval(() => {
-        getVal('pastTime').then((sec: number) => {
-          setSeconds(getTime() - sec);
-        })
+      getVal('pastTime').then((sec: number) => {
+        setSeconds(getTime() - sec);
+      })
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
-  
+
   return (
     <Table responsive="sm" bordered size="md">
       <thead>
@@ -66,37 +66,37 @@ const App: React.FC<{}> = () => {
         </tr>
       </thead>
       <tbody>
-         <tr>
-          { (currTab.title ? (currTab.title.length > 30) : (false)) ? (
+        <tr>
+          {(currTab.title ? (currTab.title.length > 30) : (false)) ? (
             <th>{currTab.title.substring(0, 31)}...</th>
-          ):(
+          ) : (
             <th>{currTab.title}</th>
           )}
 
-          { (currTab.domain ? (currTab.domain.length > 30) : (false)) ? (
-            <th className = {'domCol'}>{currTab.domain.substring(0, 31).trim()}...</th>
-            ):(
-            <th className = {'domCol'}>{currTab.domain}</th>
+          {(currTab.domain ? (currTab.domain.length > 30) : (false)) ? (
+            <th className={'domCol'}>{currTab.domain.substring(0, 31).trim()}...</th>
+          ) : (
+            <th className={'domCol'}>{currTab.domain}</th>
           )}
 
-          <th className = {'secCol'}>{formatSec(seconds)}</th>
+          <th className={'secCol'}>{formatSec(seconds)}</th>
 
         </tr>
         {allTabs?.map((tab) => (
           <tr key={tab.domain}>
-            { (tab.title ? (tab.title.length > 30) : (false)) ? (
+            {(tab.title ? (tab.title.length > 30) : (false)) ? (
               <td>{tab.title.substring(0, 31).trim()}...</td>
-            ):(
+            ) : (
               <td>{tab.title}</td>
             )}
 
-            { (tab.domain ? (tab.domain.length > 30) : (false)) ? (
-              <td className = {'domCol'}>{tab.domain.substring(0, 31).trim()}...</td>
-            ):(
-              <td className = {'domCol'}>{tab.domain}</td>
+            {(tab.domain ? (tab.domain.length > 30) : (false)) ? (
+              <td className={'domCol'}>{tab.domain.substring(0, 31).trim()}...</td>
+            ) : (
+              <td className={'domCol'}>{tab.domain}</td>
             )}
 
-            <td className = {'secCol'}>{formatSec(tab.sec)}</td>
+            <td className={'secCol'}>{formatSec(tab.sec)}</td>
 
           </tr>
         ))}

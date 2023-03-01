@@ -1,10 +1,29 @@
-.flex{
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding-top: 15rem;
-}
-body{
-  background-color: #0f0f0f!important;
+.flex {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 15rem;
 }
 
+#url-label {
+  top: 2rem;
+  width: 80%;
+  left: 0.9rem;
+  color: #999;
+  transition: transform 150ms ease-out, font-size 150ms ease-out;
+  display: inline-block;
+  position: relative;
+  padding: 0px 4px;
+  cursor: text;
+  margin-bottom: 0 !important;
+}
+
+.focused {
+  transform: translateY(-120%);
+  font-size: .78em;
+}
+
+.form-control:focus {
+  border-color: #0a58ca !important;
+  box-shadow: none !important;
+}

@@ -30,6 +30,7 @@
   "dependencies": {
     "bootstrap": "^5.2.1",
     "react-async": "^10.0.1",
-    "react-bootstrap": "^2.5.0"
+    "react-bootstrap": "^2.5.0",
+    "react-bootstrap-icons": "^1.10.2"
   }
 }

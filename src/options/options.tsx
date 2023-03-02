@@ -33,6 +33,7 @@ interface domainsFormState {
     url: string;
     errors: object;
     commonSites: commonSiteObj[];
+    switchState: boolean;
 }
 
 class NameForm extends React.Component<{}, domainsFormState> {
@@ -48,7 +49,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
             { name: "Twitter", domain: "www.facebook.com", checked: false },
             { name: "Gmail", domain: "mail.google.com", checked: false },
             { name: "Amazon", domain: "www.amazon.ca", checked: false },
-        ]
+        ], switchState: false
     };
     constructor(props: {} | Readonly<{}>) {
         super(props);
@@ -58,6 +59,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addNewDomain = this.addNewDomain.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
+        this.darkMode = this.darkMode.bind(this);
 
         document.addEventListener("DOMContentLoaded", () => {
             let element = document.getElementById("url") as HTMLInputElement;
@@ -96,11 +98,11 @@ class NameForm extends React.Component<{}, domainsFormState> {
 
     validate(domain: string) {
         if (domain === "No Domain Found") {
-            this.setState({ errors: { 'url': 'Invalid URL' } });
+            this.setState({ errors: { 'url': '*Invalid URL' } });
         } else if (!detectUnique(Array.from(this.state.newDomains.keys()), domain)) {
-            this.setState({ errors: { 'url': 'This domain is already added to the \"About to Track\" list' } });
+            this.setState({ errors: { 'url': '*This domain is already added to the \"About to Track\" list' } });
         } else if (!detectUnique(Array.from(this.state.domains.keys()), domain)) {
-            this.setState({ errors: { 'url': 'You are already tracking this domain' } });
+            this.setState({ errors: { 'url': '*You are already tracking this domain' } });
         } else {
             return true;
         }
@@ -164,7 +166,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
         }
     }
 
-    handleDelete(event: { preventDefault: any, target: any }) {
+    handleDelete(event: { preventDefault: any, target: any }): void {
         event.preventDefault();
         if (event.target.name === "aboutToTrackDomains") {
             this.setState({ newDomains: removeFalse(this.state.newDomains) });
@@ -175,18 +177,38 @@ class NameForm extends React.Component<{}, domainsFormState> {
         }
     }
 
-    darkMode() {
-        let cards = document.getElementsByClassName("card");
-        for (let i: number = 0; i < cards.length; i++) {
-            let element = cards[i] as HTMLElement;
-            element.classList.add("bg-dark text-light border-white");
+    darkMode(event: { preventDefault: any, target: any }): void {
+        let val = event.target.checked;
+        this.setState({ switchState: val });
+        if (val) {
+            let cards = document.getElementsByClassName("card");
+            for (let i: number = 0; i < cards.length; i++) {
+                let element = cards[i] as HTMLElement;
+                element.classList.add("bg-dark");
+                element.classList.add("text-light");
+                element.classList.add("border-white");
+            }
+            let headers = document.getElementsByClassName("card-header");
+            for (let i: number = 0; i < headers.length; i++) {
+                let element = headers[i] as HTMLElement;
+                element.classList.add("border-white");
+            }
+            document.getElementsByTagName("body")[0].style.backgroundColor = "#0f0f0f";
+        } else {
+            let cards = document.getElementsByClassName("card");
+            for (let i: number = 0; i < cards.length; i++) {
+                let element = cards[i] as HTMLElement;
+                element.classList.remove("bg-dark");
+                element.classList.remove("text-light");
+                element.classList.remove("border-white");
+            }
+            let headers = document.getElementsByClassName("card-header");
+            for (let i: number = 0; i < headers.length; i++) {
+                let element = headers[i] as HTMLElement;
+                element.classList.remove("border-white");
+            }
+            document.getElementsByTagName("body")[0].style.backgroundColor = "white";
         }
-        let headers = document.getElementsByClassName("card-header");
-        for (let i: number = 0; i < headers.length; i++) {
-            let element = headers[i] as HTMLElement;
-            element.classList.add("border-white");
-        }
-        document.getElementsByTagName("body")[0].style.backgroundColor = "0f0f0f";
     }
 
     /*
@@ -201,62 +223,63 @@ class NameForm extends React.Component<{}, domainsFormState> {
             <div className='flex'>
                 <CardGroup>
                     <Card style={{ width: "44rem" }} >
-                        <Card.Header as="h5"><img width={20} height={20} src={require('../static/icon.png')} style={{ marginTop: '-0.2rem', marginRight: '0.2rem' }}></img> Timely - Website Tracking</Card.Header>
+                        <Card.Header as="h5" className="py-3">
+                            <img width={22} height={22} src={require('../static/icon.png')} style={{ marginTop: '-0.25rem', marginRight: "0.18rem" }}></img> Timely - Website Tracking
+                            <Form.Check className="fs-6" style={{ float: "right", marginTop: "0.4rem" }}
+                                type="switch"
+                                id="custom-switch"
+                                label="Dark Mode"
+                                onChange={this.darkMode}
+                                defaultChecked={this.state.switchState}
+                                reverse
+                            />
+                        </Card.Header>
                         <Card.Body>
                             <Card.Text as="div">
                                 <Form onSubmit={this.handleSubmit}>
-                                    <Form.Group className="mb-3">
-                                        <Form.Label>Commonly Tracked Domains: </Form.Label><br></br>
-                                        <Row>
-                                            {this.state.commonSites.map((site, index) => (
-                                                <div className="col-3" key={site.domain}>
-                                                    <Form.Check
-                                                        type="checkbox"
-                                                        name={site.name}
-                                                        id="default-checkbox1"
-                                                        label={site.name}
-                                                        checked={this.state.commonSites[index].checked}
-                                                        aria-describedby="track${site}"
-                                                        value={index}
-                                                        onChange={this.handleChange}
-                                                        inline
-                                                    />
-                                                    {index + 1 % 4 === 0 ? (<br></br>) : (null)}
-                                                </div>
-                                            ))}
-                                        </Row>
-                                    </Form.Group>
-                                    <Form.Group as={Row} className="mb-3 g-1">
-                                        {/* <InputGroup className="mb-3"> */}
-                                        <Form.Label id="url-label" htmlFor="url"><span style={{ backgroundColor: "white" }}>Enter the URL of the website you would like to track:</span></Form.Label>
-                                        <div style={{ width: '87%' }}>
-                                            <Form.Control
-                                                className="col-auto"
-                                                type="text"
-                                                name="url"
-                                                id="url"
-                                                aria-describedby="urlToTrack"
-                                                value={this.state.url}
-                                                onChange={this.handleChange}
-                                            />
-                                        </div>
-                                        <Col>
-                                            <Button variant="success" onClick={this.addNewDomain}>Add</Button>
-                                        </Col>
-                                        {/* </InputGroup> */}
-
-                                        <Form.Text>We will convert your url to a domain, which we use to group websites by.</Form.Text>
-                                    </Form.Group>
+                                    <Form.Label>Commonly Tracked Domains: </Form.Label><br></br>
+                                    <Row style={{ marginBottom: "-0.5rem" }}>
+                                        {this.state.commonSites.map((site, index) => (
+                                            <div className="col-3" key={site.domain}>
+                                                <Form.Check
+                                                    type="checkbox"
+                                                    name={site.name}
+                                                    id="default-checkbox1"
+                                                    label={site.name}
+                                                    checked={this.state.commonSites[index].checked}
+                                                    aria-describedby="track${site}"
+                                                    value={index}
+                                                    onChange={this.handleChange}
+                                                    inline
+                                                />
+                                                {index + 1 % 4 === 0 ? (<br></br>) : (null)}
+                                            </div>
+                                        ))}
+                                    </Row>
+                                    <Form.Label id="url-label" htmlFor="url">Enter a Website URL to Track</Form.Label>
+                                    <InputGroup className='mb-1'>
+                                        <Form.Control
+                                            className="col-auto"
+                                            type="text"
+                                            name="url"
+                                            id="url"
+                                            aria-describedby="urlToTrack"
+                                            value={this.state.url}
+                                            onChange={this.handleChange}
+                                        />
+                                        <Button variant="success" onClick={this.addNewDomain}>Add</Button>
+                                    </InputGroup>
+                                    <Form.Text className="description">We will convert your url to a domain, which we use to group websites by.</Form.Text>
                                     <div className="message" style={{ color: "red" }}>{this.state.errors["url"]}</div>
                                     <div className="message" style={{ color: "green" }}>{this.state.errors["success"]}</div>
                                     <div className="message" style={{ color: "#2e8fa3" }}>{this.state.errors["info"]}</div>
-                                    <Button variant="primary" type="submit" style={{ marginTop: '0.5rem' }}>Track Staged Domains</Button>
+                                    <Button variant="primary" type="submit" style={{ marginTop: '0.7rem', marginBottom: '0.1rem' }}>Track Staged Domains</Button>
                                 </Form>
                             </Card.Text>
                         </Card.Body>
                     </Card>
                     <Card>
-                        <Card.Header as="h5" style={{ height: '41px' }}></Card.Header>
+                        <Card.Header as="h5" style={{ height: "4.05rem" }}></Card.Header>
                         <Card.Body>
                             <Row className="g-1">
                                 <div className="col-6">

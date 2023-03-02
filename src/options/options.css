@@ -27,3 +27,8 @@
   border-color: #0a58ca !important;
   box-shadow: none !important;
 }
+
+.message {
+  margin-top: -0.5rem;
+  margin-bottom: '0.5rem'
+}

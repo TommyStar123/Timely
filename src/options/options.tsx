@@ -37,24 +37,24 @@ interface domainsFormState {
 }
 
 class NameForm extends React.Component<{}, domainsFormState> {
+    commonSites: commonSiteObj[] = [
+        { name: "Youtube", domain: "www.youtube.com", checked: false },
+        { name: "TikTok", domain: "www.tiktok.com", checked: false },
+        { name: "Reddit", domain: "www.reddit.com", checked: false },
+        { name: "Netflix", domain: "www.netflix.com", checked: false },
+        { name: "GoogleDocs", domain: "docs.google.com", checked: false },
+        { name: "Twitch", domain: "www.twitch.tv", checked: false },
+        { name: "Facebook", domain: "www.facebook.com", checked: false },
+        { name: "Twitter", domain: "twitter.com", checked: false },
+        { name: "Gmail", domain: "mail.google.com", checked: false },
+        { name: "Amazon", domain: "www.amazon.ca", checked: false },
+    ];
     defaultState: domainsFormState = {
-        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: [
-            { name: "Youtube", domain: "www.youtube.com", checked: false },
-            { name: "TikTok", domain: "www.tiktok.com", checked: false },
-            { name: "Reddit", domain: "www.reddit.com", checked: false },
-            { name: "Netflix", domain: "www.netflix.com", checked: false },
-            { name: "GoogleDocs", domain: "docs.google.com", checked: false },
-            { name: "Twitch", domain: "www.twitch.tv", checked: false },
-            { name: "Youtube", domain: "twitter.com", checked: false },
-            { name: "Twitter", domain: "www.facebook.com", checked: false },
-            { name: "Gmail", domain: "mail.google.com", checked: false },
-            { name: "Amazon", domain: "www.amazon.ca", checked: false },
-        ], switchState: false
+        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: this.commonSites, switchState: false
     };
     constructor(props: {} | Readonly<{}>) {
         super(props);
         this.state = this.defaultState;
-
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
         this.addNewDomain = this.addNewDomain.bind(this);
@@ -156,13 +156,18 @@ class NameForm extends React.Component<{}, domainsFormState> {
     handleSubmit(event: { preventDefault: any, target: any }): void {
         event.preventDefault();
         if (this.state.newDomains.size === 0) {
-            this.setState({ errors: { 'info': 'No new domains were added to your current tracked list' } });
+            this.setState({ errors: { 'info': '*No new domains were added to your current tracked list' } });
         } else {
             console.log(Array.from(this.state.newDomains.keys()));
             this.updateActuallyTrackedDomains(this.state.newDomains);
             this.setState(this.defaultState);
             this.setState({ newDomains: new Map() });
             this.setState({ errors: { 'success': 'Currently tracked domains list updated!' } });
+            let commonSites = this.state.commonSites;
+            for (let obj of commonSites) {
+                obj.checked = false;
+            }
+            this.setState({ commonSites: commonSites });
         }
     }
 
@@ -225,14 +230,14 @@ class NameForm extends React.Component<{}, domainsFormState> {
                     <Card style={{ width: "44rem" }} >
                         <Card.Header as="h5" className="py-3">
                             <img width={22} height={22} src={require('../static/icon.png')} style={{ marginTop: '-0.25rem', marginRight: "0.18rem" }}></img> Timely - Website Tracking
-                            <Form.Check className="fs-6" style={{ float: "right", marginTop: "0.4rem" }}
+                            {/* <Form.Check className="fs-6" style={{ float: "right", marginTop: "0.4rem" }}
                                 type="switch"
                                 id="custom-switch"
                                 label="Dark Mode"
                                 onChange={this.darkMode}
                                 defaultChecked={this.state.switchState}
                                 reverse
-                            />
+                            /> */}
                         </Card.Header>
                         <Card.Body>
                             <Card.Text as="div">
@@ -267,19 +272,28 @@ class NameForm extends React.Component<{}, domainsFormState> {
                                             value={this.state.url}
                                             onChange={this.handleChange}
                                         />
-                                        <Button variant="success" onClick={this.addNewDomain}>Add</Button>
+                                        <Button className="px-3" variant="success" onClick={this.addNewDomain}>Add</Button>
                                     </InputGroup>
                                     <Form.Text className="description">We will convert your url to a domain, which we use to group websites by.</Form.Text>
-                                    <div className="message" style={{ color: "red" }}>{this.state.errors["url"]}</div>
+                                    <div className="message mt-1" style={{ color: "red" }}>{this.state.errors["url"]}</div>
                                     <div className="message" style={{ color: "green" }}>{this.state.errors["success"]}</div>
-                                    <div className="message" style={{ color: "#2e8fa3" }}>{this.state.errors["info"]}</div>
+                                    <div className="message mb-1" style={{ color: "rgb(33 135 207)" }}>{this.state.errors["info"]}</div>
                                     <Button variant="primary" type="submit" style={{ marginTop: '0.7rem', marginBottom: '0.1rem' }}>Track Staged Domains</Button>
                                 </Form>
                             </Card.Text>
                         </Card.Body>
                     </Card>
                     <Card>
-                        <Card.Header as="h5" style={{ height: "4.05rem" }}></Card.Header>
+                        <Card.Header as="h5">
+                            <Form.Check className="fs-6 py-2" style={{ float: "right", marginTop: "0.1rem" }}
+                                type="switch"
+                                id="custom-switch"
+                                label="Dark Mode"
+                                onChange={this.darkMode}
+                                defaultChecked={this.state.switchState}
+                                reverse
+                            />
+                        </Card.Header>
                         <Card.Body>
                             <Row className="g-1">
                                 <div className="col-6">
@@ -292,6 +306,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
                                                 [...this.state.newDomains.keys()].map((domain) => {
                                                     return <Form.Check
                                                         key={domain}
+                                                        className="staged"
                                                         type="checkbox"
                                                         name="aboutToTrackDomainsCheckbox"
                                                         label={domain}
@@ -301,7 +316,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
                                                         onChange={this.handleChange}
                                                     />
                                                 })}
-                                                < Button className="mt-3" variant="danger" type="submit" style={{ marginTop: '0.5rem' }}>Remove</Button>
+                                                < Button className="mt-3 text-light" type="submit" style={{ marginTop: '0.5rem', backgroundColor: "#029fbf", borderColor: "#029fbf" }}>Remove</Button>
                                             </div>
                                         )}
                                     </Form>
@@ -315,6 +330,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
                                             <div>
                                                 {[...this.state.domains.keys()].map((domain) => {
                                                     return <Form.Check
+                                                        className="remove"
                                                         key={domain}
                                                         type="checkbox"
                                                         name="trackedDomainsCheckbox"

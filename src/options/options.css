@@ -25,7 +25,7 @@
 }
 
 .form-control:focus {
-  border-color: #0a58ca !important;
+  border-color: #198754 !important;
   box-shadow: none !important;
 }
 
@@ -37,4 +37,24 @@
 .description {
   font-size: 0.9em !important;
   margin-left: 0.17rem;
+}
+
+.form-check-input:focus {
+  box-shadow: none;
+}
+
+.remove .form-check-input {
+  border-color: #bb2d3b !important;
+}
+
+.remove .form-check-input:checked {
+  background-color: #bb2d3b;
+}
+
+.staged .form-check-input {
+  border-color: #029fbf !important;
+}
+
+.staged .form-check-input:checked {
+  background-color: #029fbf;
 }

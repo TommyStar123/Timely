@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
 
 import 'bootstrap/dist/css/bootstrap.min.css'
@@ -6,12 +6,11 @@ import Form from 'react-bootstrap/Form'
 import Card from 'react-bootstrap/Card'
 import CardGroup from 'react-bootstrap/CardGroup';
 import Button from 'react-bootstrap/Button';
-import { XCircle } from 'react-bootstrap-icons';
-import { Badge, Col, FloatingLabel, InputGroup, Row, Table } from 'react-bootstrap'
+import { InputGroup, Row } from 'react-bootstrap'
 import './options.css'
 
 import { getVal, setVal } from '../utils/storage'
-import { getDomain, removeFalse, detectUnique } from '../utils/helper'
+import { getDomain, removeFalse, removeItem, detectUnique } from '../utils/helper'
 
 interface tabObj {
     id: number
@@ -19,6 +18,7 @@ interface tabObj {
     url: string
     title: string
     sec: number
+    icon: string
 }
 
 interface commonSiteObj {
@@ -158,7 +158,6 @@ class NameForm extends React.Component<{}, domainsFormState> {
         if (this.state.newDomains.size === 0) {
             this.setState({ errors: { 'info': '*No new domains were added to your current tracked list' } });
         } else {
-            console.log(Array.from(this.state.newDomains.keys()));
             this.updateActuallyTrackedDomains(this.state.newDomains);
             this.setState(this.defaultState);
             this.setState({ newDomains: new Map() });
@@ -171,14 +170,24 @@ class NameForm extends React.Component<{}, domainsFormState> {
         }
     }
 
-    handleDelete(event: { preventDefault: any, target: any }): void {
+    async handleDelete(event: { preventDefault: any, target: any }): Promise<void> {
         event.preventDefault();
         if (event.target.name === "aboutToTrackDomains") {
             this.setState({ newDomains: removeFalse(this.state.newDomains) });
-            console.log(this.state.newDomains);
         } else {
             this.setState({ domains: removeFalse(this.state.domains) });
-            setVal("trackedDomains", Array.from(this.state.domains.keys()));
+            let trackedDomains = Array.from(this.state.domains.keys())
+            await setVal("trackedDomains", trackedDomains);
+            let allTabs: tabObj[] = await getVal("allTabs");
+            console.log(trackedDomains);
+            console.log(allTabs);
+            allTabs.forEach((tab) => {
+                if (detectUnique(trackedDomains, tab.domain)) {
+                    removeItem(allTabs, tab);
+                }
+            })
+            console.log(allTabs);
+            await setVal("allTabs", allTabs);
         }
     }
 

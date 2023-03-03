@@ -1,3 +1,11 @@
-.secCol{
+.secCol {
     min-width: 10rem;
+}
+
+.nameCol {
+    min-width: 10rem;
+}
+
+.domCol {
+    max-width: 30rem;
 }

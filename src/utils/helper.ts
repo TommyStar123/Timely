@@ -32,3 +32,24 @@ export function detectUnique<T>(arr: Array<T>, value: T): Boolean {
   }
   return true;
 }
+
+export function removeItem<T>(arr: Array<T>, value: T): Array<T> {
+  const index = arr.indexOf(value);
+  if (index > -1) {
+    arr.splice(index, 1);
+  }
+  return arr;
+}
+
+export function formatSec(x: number) {
+  x = Number(x);
+  let d = Math.floor(x / (24 * 3600));
+  let h = Math.floor(x % (3600 * 24) / 3600);
+  let m = Math.floor(x % 3600 / 60);
+  let s = Math.floor(x % 3600 % 60);
+  let dDisplay = d > 0 ? d + (d == 1 ? " day" : " days") + (h > 0 || m > 0 || s > 0 ? ", " : "") : "";
+  let hDisplay = h > 0 ? h + (h == 1 ? " hr" : " hrs") + (m > 0 || s > 0 ? ", " : "") : "";
+  let mDisplay = m > 0 ? m + (m == 1 ? " min" : " mins") + (s >= 0 ? ", " : "") : "";
+  let sDisplay = s >= 0 ? s + (s == 1 ? " sec" : " secs") : "";
+  return dDisplay + hDisplay + mDisplay + sDisplay;
+}

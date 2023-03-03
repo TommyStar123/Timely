@@ -7,7 +7,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './popup.css'
 
 import { getVal } from '../utils/storage'
-import { getTime } from '../utils/helper'
+import { getTime, formatSec } from '../utils/helper'
 
 interface tabObj {
   id: number
@@ -15,31 +15,19 @@ interface tabObj {
   url: string
   title: string
   sec: number
-}
-
-function formatSec(x) {
-  x = Number(x);
-  let d = Math.floor(x / (24 * 3600));
-  let h = Math.floor(x % (3600 * 24) / 3600);
-  let m = Math.floor(x % 3600 / 60);
-  let s = Math.floor(x % 3600 % 60);
-  let dDisplay = d > 0 ? d + (d == 1 ? " day" : " days") + (h > 0 || m > 0 || s > 0 ? ", " : "") : "";
-  let hDisplay = h > 0 ? h + (h == 1 ? " hr" : " hrs") + (m > 0 || s > 0 ? ", " : "") : "";
-  let mDisplay = m > 0 ? m + (m == 1 ? " min" : " mins") + (s >= 0 ? ", " : "") : "";
-  let sDisplay = s >= 0 ? s + (s == 1 ? " sec" : " secs") : "";
-  return dDisplay + hDisplay + mDisplay + sDisplay;
+  icon: string
 }
 
 const App: React.FC<{}> = () => {
   const [seconds, setSeconds] = useState(getTime() - getVal('pastTime'));
   const [allTabs, setAllTabs] = useState<tabObj[]>([]);
-  const [currTab, setCurrTab] = useState<tabObj>(getVal('currTab'));
+  const [prevTab, setPrevTab] = useState<tabObj>(getVal('prevTab')); //prevTab is actually the current tab if you think about it since I use the currentTab as prevTab when calculating times for the new tab
   useEffect(() => {
     getVal('allTabs').then((tabs: tabObj[]) => {
       setAllTabs(tabs);
     })
-    getVal('currTab').then((tab: tabObj) => {
-      setCurrTab(tab);
+    getVal('prevTab').then((tab: tabObj) => {
+      setPrevTab(tab);
     })
   }, [])
 
@@ -57,7 +45,7 @@ const App: React.FC<{}> = () => {
   }, []);
 
   return (
-    <Table responsive="sm" bordered size="md">
+    <Table responsive="xl" bordered size="md">
       <thead>
         <tr>
           <th>Name</th>
@@ -67,27 +55,27 @@ const App: React.FC<{}> = () => {
       </thead>
       <tbody>
         <tr>
-          {(currTab.title ? (currTab.title.length > 30) : (false)) ? (
-            <th>{currTab.title.substring(0, 31)}...</th>
+          {(prevTab.title ? (prevTab.title.split(' ').join('').length > 30) : (false)) ? (
+            <th className={'nameCol'}>{prevTab.title.substring(0, 31)}...</th>
           ) : (
-            <th>{currTab.title}</th>
+            <th className={'nameCol'}>{prevTab.title ? prevTab.title.split(' ').join('') : "No Title Found"}</th>
           )}
 
-          {(currTab.domain ? (currTab.domain.length > 30) : (false)) ? (
-            <th className={'domCol'}>{currTab.domain.substring(0, 31).trim()}...</th>
+          {(prevTab.domain ? (prevTab.domain.length > 30) : (false)) ? (
+            <th className={'domCol'}>{prevTab.domain.substring(0, 31).trim()}...</th>
           ) : (
-            <th className={'domCol'}>{currTab.domain}</th>
+            <th className={'domCol'}>{prevTab.domain}</th>
           )}
 
           <th className={'secCol'}>{formatSec(seconds)}</th>
 
         </tr>
         {allTabs?.map((tab) => (
-          <tr key={tab.domain}>
+          <tr key={tab.id}>
             {(tab.title ? (tab.title.length > 30) : (false)) ? (
-              <td>{tab.title.substring(0, 31).trim()}...</td>
+              <td className={'nameCol'}>{tab.title.substring(0, 31).trim()}...</td>
             ) : (
-              <td>{tab.title}</td>
+              <td className={'nameCol'}>{tab.title}</td>
             )}
 
             {(tab.domain ? (tab.domain.length > 30) : (false)) ? (

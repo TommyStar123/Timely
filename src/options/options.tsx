@@ -33,10 +33,11 @@ interface domainsFormState {
     url: string;
     errors: object;
     commonSites: commonSiteObj[];
-    switchState: boolean;
+    darkMode: boolean;
+    trackAll: boolean;
 }
 
-class NameForm extends React.Component<{}, domainsFormState> {
+class TrackForm extends React.Component<{}, domainsFormState> {
     commonSites: commonSiteObj[] = [
         { name: "Youtube", domain: "www.youtube.com", checked: false },
         { name: "TikTok", domain: "www.tiktok.com", checked: false },
@@ -50,7 +51,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
         { name: "Amazon", domain: "www.amazon.ca", checked: false },
     ];
     defaultState: domainsFormState = {
-        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: this.commonSites, switchState: false
+        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: this.commonSites, darkMode: false, trackAll: false
     };
     constructor(props: {} | Readonly<{}>) {
         super(props);
@@ -60,6 +61,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
         this.addNewDomain = this.addNewDomain.bind(this);
         this.handleDelete = this.handleDelete.bind(this);
         this.darkMode = this.darkMode.bind(this);
+        this.trackItAll = this.trackItAll.bind(this);
 
         document.addEventListener("DOMContentLoaded", () => {
             let element = document.getElementById("url") as HTMLInputElement;
@@ -81,13 +83,19 @@ class NameForm extends React.Component<{}, domainsFormState> {
             const newState = { domains: new Map(oldDomains.map(obj => [obj, this.state.domains.get(obj) ? this.state.domains.get(obj) : false])) } as Pick<domainsFormState, keyof domainsFormState>;
             this.setState(newState);
         });
+        getVal("trackAll").then((trackAll: boolean) => {
+            this.setState({ trackAll: trackAll });
+        })
+        getVal("darkMode").then((darkMode: boolean) => {
+            this.setState({ darkMode: darkMode });
+        })
     }
-    componentDidUpdate() {
-        getVal("trackedDomains").then((oldDomains: string[]) => {
-            const newState = { domains: new Map(oldDomains.map(obj => [obj, this.state.domains.get(obj) ? this.state.domains.get(obj) : false])) } as Pick<domainsFormState, keyof domainsFormState>;
-            this.setState(newState);
-        });
-    }
+    // componentDidUpdate() {
+    //     getVal("trackedDomains").then((oldDomains: string[]) => {
+    //         const newState = { domains: new Map(oldDomains.map(obj => [obj, this.state.domains.get(obj) ? this.state.domains.get(obj) : false])) } as Pick<domainsFormState, keyof domainsFormState>;
+    //         this.setState(newState);
+    //     });
+    // }
 
     updateActuallyTrackedDomains(newDomains: Map<string, boolean>) {
         getVal("trackedDomains").then((domains: string[]) => {
@@ -173,7 +181,23 @@ class NameForm extends React.Component<{}, domainsFormState> {
     async handleDelete(event: { preventDefault: any, target: any }): Promise<void> {
         event.preventDefault();
         if (event.target.name === "aboutToTrackDomains") {
-            this.setState({ newDomains: removeFalse(this.state.newDomains) });
+            let newDoms = this.state.newDomains;
+            let commonSites = this.commonSites;
+            let commonDomains: string[] = [];
+            for (let i = 0; i < commonSites.length; i++) {
+                commonDomains.push(commonSites[i].domain);
+            }
+            for (let [key, value] of newDoms.entries()) {
+                let index = commonDomains.indexOf(key)
+                if (value) {
+                    newDoms.delete(key);
+                    if (index > -1) {
+                        commonSites[index].checked = false;
+                    }
+                }
+            }
+            this.setState({ newDomains: newDoms });
+            this.setState({ commonSites: commonSites });
         } else {
             this.setState({ domains: removeFalse(this.state.domains) });
             let trackedDomains = Array.from(this.state.domains.keys())
@@ -193,7 +217,8 @@ class NameForm extends React.Component<{}, domainsFormState> {
 
     darkMode(event: { preventDefault: any, target: any }): void {
         let val = event.target.checked;
-        this.setState({ switchState: val });
+        this.setState({ darkMode: val });
+        setVal("darkMode", val);
         if (val) {
             let cards = document.getElementsByClassName("card");
             for (let i: number = 0; i < cards.length; i++) {
@@ -225,6 +250,12 @@ class NameForm extends React.Component<{}, domainsFormState> {
         }
     }
 
+    trackItAll(event: { preventDefault: any, target: any }) {
+        let val = event.target.checked;
+        this.setState({ trackAll: val });
+        setVal("trackAll", val);
+    }
+
     /*
         //How it works:
         //Every input in the form has a state, the inputs all have value = their state, so that the states are the "true value" of the form (checked for checkboxes)
@@ -239,14 +270,15 @@ class NameForm extends React.Component<{}, domainsFormState> {
                     <Card style={{ width: "44rem" }} >
                         <Card.Header as="h5" className="py-3">
                             <img width={22} height={22} src={require('../static/icon.png')} style={{ marginTop: '-0.25rem', marginRight: "0.18rem" }}></img> Timely - Website Tracking
-                            {/* <Form.Check className="fs-6" style={{ float: "right", marginTop: "0.4rem" }}
+                            <Form.Check style={{ float: "right", marginTop: "0.4rem" }}
+                                className="fs-6"
                                 type="switch"
                                 id="custom-switch"
                                 label="Dark Mode"
                                 onChange={this.darkMode}
-                                defaultChecked={this.state.switchState}
+                                defaultChecked={this.state.darkMode}
                                 reverse
-                            /> */}
+                            />
                         </Card.Header>
                         <Card.Body>
                             <Card.Text as="div">
@@ -294,13 +326,13 @@ class NameForm extends React.Component<{}, domainsFormState> {
                     </Card>
                     <Card>
                         <Card.Header as="h5">
-                            <Form.Check className="fs-6 py-2" style={{ float: "right", marginTop: "0.1rem" }}
-                                type="switch"
-                                id="custom-switch"
-                                label="Dark Mode"
-                                onChange={this.darkMode}
-                                defaultChecked={this.state.switchState}
-                                reverse
+                            <Form.Check style={{ float: "right", marginTop: "0.4rem" }}
+                                className="remove fs-6"
+                                type="checkbox"
+                                label="Just Track Everything Bro"
+                                onChange={this.trackItAll}
+                                checked={this.state.trackAll}
+                                aria-describedby={"trackItAll"}
                             />
                         </Card.Header>
                         <Card.Body>
@@ -353,8 +385,7 @@ class NameForm extends React.Component<{}, domainsFormState> {
                                                 <div className='ms-auto'>
                                                     < Button className="mt-3" type="submit" variant="danger" style={{ marginTop: '0.5rem' }}>Remove</Button>
                                                 </div>
-                                            </div>
-                                        )}
+                                            </div>)}
                                     </Form>
                                 </div>
                             </Row>
@@ -368,4 +399,4 @@ class NameForm extends React.Component<{}, domainsFormState> {
 
 const root = document.createElement('div')
 document.body.appendChild(root)
-ReactDOM.render(<NameForm />, root)
+ReactDOM.render(<TrackForm />, root)

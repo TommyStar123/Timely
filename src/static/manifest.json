@@ -23,5 +23,6 @@
       "matches": ["<all_urls>"],
       "js": ["contentScript.js"]
     }
-  ]
+  ],
+  "web_accessible_resources": [ { "resources": ["gold-blue-diamond-custom-cursor.png", "gold-blue-diamond-custom-cursor2.png"], "matches": ["<all_urls>"] } ]
 }

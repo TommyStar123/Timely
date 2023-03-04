@@ -17,18 +17,20 @@ async function getCurrentTab() {
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  // if (reason === 'install'){
-  //  chrome.runtime.openOptionsPage();
-  //  await setVal("trackedDomains", []);
-  // }
-  chrome.runtime.openOptionsPage();
-  await setVal("allTabs", []);
-  await setVal("trackedDomains", []);
-  let tab = await getCurrentTab();
-  await setVal("prevTab", { id: 0, domain: "chnogmmohmgcgldcllikbkflgmfmjlip", url: "chrome-extension://chnogmmohmgcgldcllikbkflgmfmjlip/options.html", title: "Timely", sec: 0, icon: "" });
-  await setVal("pastTime", getTime());
-  await setVal("activeTabId", tab.id);
-  await setVal("trackAll", false);
+  if (reason === 'install') {
+    chrome.runtime.openOptionsPage();
+    await setVal("trackedDomains", []);
+    await setVal("allTabs", []);
+    let tab = await getCurrentTab();
+    await setVal("prevTab", { id: 0, domain: "chnogmmohmgcgldcllikbkflgmfmjlip", url: "chrome-extension://chnogmmohmgcgldcllikbkflgmfmjlip/options.html", title: "Timely", sec: 0, icon: "" });
+    await setVal("pastTime", getTime());
+    await setVal("activeTabId", tab.id);
+    await setVal("trackAll", false);
+    await setVal("darkMode", false);
+  }
+  // chrome.runtime.openOptionsPage();
+  // await setVal("allTabs", []);
+  // await setVal("trackedDomains", []);
 })
 
 async function oldTab(newDom: string) {

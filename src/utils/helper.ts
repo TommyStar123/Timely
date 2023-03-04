@@ -16,7 +16,7 @@ export function getDomain(url: string): string {
   }
 }
 
-export function removeFalse<T>(newDomains: Map<string, boolean>): Map<string, boolean> {
+export function removeFalse(newDomains: Map<string, boolean>): Map<string, boolean> {
   for (let [key, value] of newDomains.entries()) {
     if (value) {
       newDomains.delete(key);

@@ -215,16 +215,15 @@ class TrackForm extends React.Component<{}, domainsFormState> {
             let trackedDomainsMap = this.state.domains;
             setVal("trackedDomains", trackedDomains);
             getVal("allTabs").then((allTabs: tabObj[]) => {
-                console.log(trackedDomains);
-                console.log(allTabs);
                 allTabs.forEach((tab: { domain: string }, index) => {
                     if (!detectUnique(trackedDomains, tab.domain) && trackedDomainsMap.get(tab.domain)) {
-                        allTabs = allTabs.splice(index, 1);
+                        allTabs.splice(index, 1);
                     }
                 })
-                console.log(allTabs);
                 setVal("allTabs", allTabs);
-                this.setState({ domains: removeFalse(this.state.domains) });
+                trackedDomainsMap = removeFalse(this.state.domains);
+                this.setState({ domains: trackedDomainsMap });
+                setVal("trackedDomains", Array.from(trackedDomainsMap.keys()));
             });
         }
     }

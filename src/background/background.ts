@@ -27,9 +27,11 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     await setVal("activeTabId", tab.id);
     await setVal("trackAll", false);
     await setVal("darkMode", false);
+    await setVal("skipStart", -1);
+    await setVal("skipTime", false);
+    await setVal("skipAmount", 0);
   }
   // chrome.runtime.openOptionsPage();
-  // await setVal("allTabs", []);
   // await setVal("trackedDomains", []);
 })
 
@@ -47,12 +49,15 @@ async function oldTab(newDom: string) {
 }
 
 async function pushTab(tab: tabObj) {
+  let skip = await getVal("skipAmount");
   if (await oldTab(tab.domain)) {
     let allTabs: tabObj[] = await getVal('allTabs');
     for (let i = 0; i < allTabs.length; i++) {
       if (tab.domain === allTabs[i].domain) {
         allTabs[i].sec += tab.sec;
+        allTabs[i].sec -= skip;
         await setVal("allTabs", allTabs);
+        break;
       }
     }
   } else {
@@ -62,7 +67,7 @@ async function pushTab(tab: tabObj) {
       domain: tab.domain,
       url: tab.url,
       title: tab.title,
-      sec: tab.sec,
+      sec: tab.sec - skip,
       icon: tab.icon
     }
     allTabs.push(newTab);
@@ -71,6 +76,7 @@ async function pushTab(tab: tabObj) {
     await setVal("allTabs", allTabs);
     await setVal("trackedDomains", trackedDomains);
   }
+  await setVal("skipAmount", 0);
 }
 
 async function changePrevTab(oldId: number, currTab: chrome.tabs.Tab) {
@@ -128,3 +134,33 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
     await setVal("pastTime", getTime());
   }
 })
+
+chrome.runtime.onMessage.addListener(
+  async function (request, sender, sendResponse) {
+    if (request.action == "minimized") {
+      let window: chrome.windows.Window = await chrome.windows.getLastFocused();
+      if (!window.focused && !(await getVal("skipTime"))) {
+        let skipStart = await getVal("skipStart");
+        if (skipStart != -1) {
+          console.error("For some reason skipStart has already been set");
+        }
+        await setVal("skipStart", getTime());
+        console.log("Minimized chrome, Set skip start to: " + getTime());
+        await setVal("skipTime", true);
+      }
+    } else {
+      if (await getVal("skipTime")) {
+        let skipStart = await getVal("skipStart");
+        if (skipStart == -1) {
+          console.error("No skip start time set, should already be set, as skipTime was set to true, and now its false");
+        }
+        let skipAmount = await getVal("skipAmount");
+        console.log("Back to chrome, Set skip amount to: " + skipAmount + (getTime() - skipStart));
+        await setVal("skipAmount", skipAmount + (getTime() - skipStart));
+        await setVal("skipStart", -1);
+        await setVal("skipTime", false);
+      }
+    }
+    return true;
+  }
+);

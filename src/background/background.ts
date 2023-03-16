@@ -31,6 +31,7 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     await setVal("skipTime", false);
     await setVal("skipAmount", 0);
   }
+  await setVal("allTabs", []);
   // chrome.runtime.openOptionsPage();
   // await setVal("trackedDomains", []);
 })
@@ -76,7 +77,6 @@ async function pushTab(tab: tabObj) {
     await setVal("allTabs", allTabs);
     await setVal("trackedDomains", trackedDomains);
   }
-  await setVal("skipAmount", 0);
 }
 
 async function changePrevTab(oldId: number, currTab: chrome.tabs.Tab) {
@@ -115,6 +115,7 @@ chrome.tabs.onActivated.addListener(async function () {
     tempTab.sec = getTime() - pastTime;
     await pushTab(tempTab);
   }
+  await setVal("skipAmount", 0);
   await setVal("pastTime", getTime());
 })
 
@@ -131,6 +132,7 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
       tempTab.sec = getTime() - await getVal("pastTime");
       await pushTab(tempTab);
     }
+    await setVal("skipAmount", 0);
     await setVal("pastTime", getTime());
   }
 })
@@ -155,7 +157,8 @@ chrome.runtime.onMessage.addListener(
           console.error("No skip start time set, should already be set, as skipTime was set to true, and now its false");
         }
         let skipAmount = await getVal("skipAmount");
-        console.log("Back to chrome, Set skip amount to: " + skipAmount + (getTime() - skipStart));
+        let skip = skipAmount + (getTime() - skipStart);
+        console.log("Back to chrome, Set skip amount to: " + skip);
         await setVal("skipAmount", skipAmount + (getTime() - skipStart));
         await setVal("skipStart", -1);
         await setVal("skipTime", false);

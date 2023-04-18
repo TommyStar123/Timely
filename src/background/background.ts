@@ -17,7 +17,7 @@ async function getCurrentTab() {
 }
 
 chrome.runtime.onInstalled.addListener(async ({ reason }) => {
-  if (reason === 'install') {
+  if (reason == 'install') {
     chrome.runtime.openOptionsPage();
     await setVal("trackedDomains", []);
     await setVal("allTabs", []);
@@ -30,9 +30,11 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     await setVal("skipStart", -1);
     await setVal("skipTime", false);
     await setVal("skipAmount", 0);
+    await setVal("idleTime", 5);
   }
-  await setVal("allTabs", []);
-  // chrome.runtime.openOptionsPage();
+  // await setVal("idleTime", 5);
+  // await setVal("allTabs", []);
+  chrome.runtime.openOptionsPage();
   // await setVal("trackedDomains", []);
 })
 
@@ -40,7 +42,7 @@ async function oldTab(newDom: string) {
   let allTabs: tabObj[] = await getVal('allTabs');
   if (allTabs.length != 0) {
     for (let i = 0; i < allTabs.length; i++) {
-      if (allTabs[i].domain === newDom) {
+      if (allTabs[i].domain == newDom) {
         return true;
       }
     }
@@ -50,13 +52,12 @@ async function oldTab(newDom: string) {
 }
 
 async function pushTab(tab: tabObj) {
-  let skip = await getVal("skipAmount");
   if (await oldTab(tab.domain)) {
     let allTabs: tabObj[] = await getVal('allTabs');
     for (let i = 0; i < allTabs.length; i++) {
-      if (tab.domain === allTabs[i].domain) {
+      if (tab.domain == allTabs[i].domain) {
         allTabs[i].sec += tab.sec;
-        allTabs[i].sec -= skip;
+        allTabs[i].title = tab.title;
         await setVal("allTabs", allTabs);
         break;
       }
@@ -68,7 +69,7 @@ async function pushTab(tab: tabObj) {
       domain: tab.domain,
       url: tab.url,
       title: tab.title,
-      sec: tab.sec - skip,
+      sec: tab.sec,
       icon: tab.icon
     }
     allTabs.push(newTab);
@@ -84,10 +85,15 @@ async function changePrevTab(oldId: number, currTab: chrome.tabs.Tab) {
   let title = "Invalid Tab";
   let url = currTab.url;
   let icon = currTab.favIconUrl;
-  if (currTab.title !== "") {
+  if (currTab.title != "") {
     title = currTab.title;
   } else {
-    title = "Timely";
+    let attempt2 = await getCurrentTab();
+    if (attempt2.title != "") {
+      title = attempt2.title;
+    } else {
+      title = "Timely";
+    }
     url = currTab.pendingUrl;
     domain = getDomain(url);
   }
@@ -106,33 +112,50 @@ async function changePrevTab(oldId: number, currTab: chrome.tabs.Tab) {
 chrome.tabs.onActivated.addListener(async function () {
   let currTab = await getCurrentTab();
   let prevTab: tabObj = await getVal("prevTab");
-  await changePrevTab(prevTab.id, currTab);
+  changePrevTab(prevTab.id, currTab);
   let trackedDomains = await getVal("trackedDomains");
   if (await getVal("trackAll") || !detectUnique(trackedDomains, getDomain(prevTab.url))) {
     let tempTab = prevTab;
     let pastTime = await getVal("pastTime");
     // console.log(`The total time was: ${getTime() - pastTime} seconds.\n For url: ${prevTab.url}, domain: ${prevTab.domain}`);
-    tempTab.sec = getTime() - pastTime;
-    await pushTab(tempTab);
+    let skipStart = getVal("skipStart")
+    if (await getVal("skipTime") && skipStart != -1) {
+      let skipAmount = await getVal("skipAmount");
+      await setVal("skipAmount", skipAmount + (getTime() - skipStart));
+    }
+    tempTab.sec = getTime() - pastTime - await getVal("skipAmount");
+    if (tempTab.sec < await getVal("idleTime") * 60 * 60 * 1000) {
+      await pushTab(tempTab);
+    }
   }
   await setVal("skipAmount", 0);
+  await setVal("skipStart", -1);
+  await setVal("skipTime", false);
   await setVal("pastTime", getTime());
 })
 
+
 chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
-  if (await getVal("activeTabId") === tabId && tab.status === 'complete' &&
-    tab.url !== "" && getDomain(tab.url) !== "No Domain Found"
-    && await getVal("activeTabDomain") !== getDomain(tab.url)) {
+  if (await getVal("activeTabId") == tabId && tab.status == 'complete' &&
+    tab.url != "" && getDomain(tab.url) != "No Domain Found"
+    && await getVal("activeTabDomain") != getDomain(tab.url)) {
     let currTab = await getCurrentTab();
     let prevTab: tabObj = await getVal("prevTab");
-    await changePrevTab(prevTab.id, currTab);
+    changePrevTab(prevTab.id, currTab);
     let trackedDomains = await getVal("trackedDomains");
     if (await getVal("trackAll") || !detectUnique(trackedDomains, getDomain(prevTab.url))) {
       let tempTab = prevTab;
-      tempTab.sec = getTime() - await getVal("pastTime");
+      let skipStart = getVal("skipStart")
+      if (await getVal("skipTime") && skipStart != -1) {
+        let skipAmount = await getVal("skipAmount");
+        await setVal("skipAmount", skipAmount + (getTime() - skipStart));
+      }
+      tempTab.sec = getTime() - await getVal("pastTime") - await getVal("skipAmount");
       await pushTab(tempTab);
     }
     await setVal("skipAmount", 0);
+    await setVal("skipStart", -1);
+    await setVal("skipTime", false);
     await setVal("pastTime", getTime());
   }
 })
@@ -147,18 +170,15 @@ chrome.runtime.onMessage.addListener(
           console.error("For some reason skipStart has already been set");
         }
         await setVal("skipStart", getTime());
-        console.log("Minimized chrome, Set skip start to: " + getTime());
+        // console.log("Minimized chrome, Set skip start to: " + getTime());
         await setVal("skipTime", true);
       }
     } else {
-      if (await getVal("skipTime")) {
-        let skipStart = await getVal("skipStart");
-        if (skipStart == -1) {
-          console.error("No skip start time set, should already be set, as skipTime was set to true, and now its false");
-        }
+      let skipStart = await getVal("skipStart");
+      if (await getVal("skipTime") && skipStart != -1) {
         let skipAmount = await getVal("skipAmount");
         let skip = skipAmount + (getTime() - skipStart);
-        console.log("Back to chrome, Set skip amount to: " + skip);
+        // console.log("Back to chrome, Set skip amount to: " + skip);
         await setVal("skipAmount", skipAmount + (getTime() - skipStart));
         await setVal("skipStart", -1);
         await setVal("skipTime", false);

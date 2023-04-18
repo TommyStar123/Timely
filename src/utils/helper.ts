@@ -50,6 +50,7 @@ export function formatSec(x: number) {
   let dDisplay = d > 0 ? d + (d == 1 ? " day" : " days") + (h > 0 || m > 0 || s > 0 ? ", " : "") : "";
   let hDisplay = h > 0 ? h + (h == 1 ? " hr" : " hrs") + (m > 0 || s > 0 ? ", " : "") : "";
   let mDisplay = m > 0 ? m + (m == 1 ? " min" : " mins") + (s >= 0 ? ", " : "") : "";
-  let sDisplay = s >= 0 ? s + (s == 1 ? " sec" : " secs") : "";
+  let sDisplay = s + (s == 1 ? " sec" : " secs");
+  // let sDisplay = s >= 0 ? s + (s == 1 ? " sec" : " secs") : "";
   return dDisplay + hDisplay + mDisplay + sDisplay;
 }

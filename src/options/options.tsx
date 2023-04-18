@@ -6,11 +6,12 @@ import Form from 'react-bootstrap/Form'
 import Card from 'react-bootstrap/Card'
 import CardGroup from 'react-bootstrap/CardGroup';
 import Button from 'react-bootstrap/Button';
-import { InputGroup, Row } from 'react-bootstrap'
+import { InputGroup, OverlayTrigger, Popover, Row } from 'react-bootstrap'
 import './options.css'
 
 import { getVal, setVal } from '../utils/storage'
 import { getDomain, removeFalse, removeItem, detectUnique } from '../utils/helper'
+import { QuestionCircle } from 'react-bootstrap-icons'
 
 interface tabObj {
     id: number
@@ -35,6 +36,7 @@ interface domainsFormState {
     commonSites: commonSiteObj[];
     darkMode: boolean;
     trackAll: boolean;
+    idleTime: number;
 }
 
 class TrackForm extends React.Component<{}, domainsFormState> {
@@ -51,7 +53,7 @@ class TrackForm extends React.Component<{}, domainsFormState> {
         { name: "Amazon", domain: "www.amazon.ca", checked: false },
     ];
     defaultState: domainsFormState = {
-        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: this.commonSites, darkMode: false, trackAll: false
+        newDomains: new Map(), domains: new Map(), url: '', errors: {}, commonSites: this.commonSites, darkMode: false, trackAll: false, idleTime: 0
     };
     constructor(props: {} | Readonly<{}>) {
         super(props);
@@ -62,6 +64,7 @@ class TrackForm extends React.Component<{}, domainsFormState> {
         this.handleDelete = this.handleDelete.bind(this);
         this.darkMode = this.darkMode.bind(this);
         this.trackItAll = this.trackItAll.bind(this);
+        this.changeIdleTime = this.changeIdleTime.bind(this);
 
         document.addEventListener("DOMContentLoaded", () => {
             let element = document.getElementById("url") as HTMLInputElement;
@@ -98,14 +101,10 @@ class TrackForm extends React.Component<{}, domainsFormState> {
             this.setState({ darkMode: darkMode });
             this.setDarkLight(darkMode);
         })
+        getVal("idleTime").then((idleTime: number) => {
+            this.setState({ idleTime: idleTime });
+        })
     }
-
-    // componentDidUpdate() {
-    //     getVal("trackedDomains").then((oldDomains: string[]) => {
-    //         const newState = { domains: new Map(oldDomains.map(obj => [obj, this.state.domains.get(obj) ? this.state.domains.get(obj) : false])) } as Pick<domainsFormState, keyof domainsFormState>;
-    //         this.setState(newState);
-    //     });
-    // }
 
     updateActuallyTrackedDomains(newDomains: Map<string, boolean>) {
         getVal("trackedDomains").then((domains: string[]) => {
@@ -241,6 +240,12 @@ class TrackForm extends React.Component<{}, domainsFormState> {
         setVal("trackAll", val);
     }
 
+    changeIdleTime(event: { preventDefault: any, target: any }): void {
+        let val = event.target.value;
+        this.setState({ idleTime: val });
+        setVal("idleTime", val);
+    }
+
     setDarkLight(val: boolean) {
         if (val) {
             let cards = document.getElementsByClassName("card");
@@ -342,9 +347,34 @@ class TrackForm extends React.Component<{}, domainsFormState> {
                         </Card.Body>
                     </Card>
                     <Card>
-                        <Card.Header as="h5" style={{ height: "4.05rem" }} >
-                            <Form.Check style={{ float: "right", marginTop: "0.9rem" }}
-                                className="remove fs-6"
+                        <Card.Header className="d-flex flex-row" style={{ height: "4.05rem", padding: '0.9rem 1rem' }} >
+                            <OverlayTrigger
+                                trigger={['hover', 'focus']}
+                                key='popover'
+                                placement='top'
+                                overlay={
+                                    <Popover id={`popover-positioned-top`}>
+                                        <Popover.Body>
+                                            The minimum amount of time for an active tab to be considered idle and its current time session ignored.
+                                        </Popover.Body>
+                                    </Popover>
+                                }
+                            >
+                                <QuestionCircle className="align-self-center me-2" />
+                            </OverlayTrigger>
+                            <Form.Label className="me-2" id="idle-label" htmlFor="idle" style={{ marginTop: "0.35rem" }}>Set Idle Time: </Form.Label>
+                            <Form.Control
+                                type="number"
+                                name="idle"
+                                aria-describedby="idleTime"
+                                value={this.state.idleTime}
+                                onChange={this.changeIdleTime}
+                                style={{ width: '8%', padding: '.375rem .5rem' }}
+                            />
+
+                            <Form.Check
+                                style={{ marginTop: "0.3rem" }}
+                                className="remove fs-6 ms-auto mt-2"
                                 type="checkbox"
                                 label="Just Track Everything Bro"
                                 onChange={this.trackItAll}
@@ -385,7 +415,7 @@ class TrackForm extends React.Component<{}, domainsFormState> {
                                         {this.state.domains.size === 0 ? (
                                             <Form.Check disabled label="None" />
                                         ) : (
-                                            <div>
+                                            <div style={{ maxHeight: '30vh', overflowY: 'auto', overflowX: 'hidden' }}>
                                                 {[...this.state.domains.keys()].map((domain) => {
                                                     return <Form.Check
                                                         className="remove"
@@ -399,10 +429,10 @@ class TrackForm extends React.Component<{}, domainsFormState> {
                                                         onChange={this.handleChange}
                                                     />
                                                 })}
-                                                <div className='ms-auto'>
-                                                    < Button className="mt-3" type="submit" variant="danger" style={{ marginTop: '0.5rem' }}>Remove</Button>
-                                                </div>
                                             </div>)}
+                                        <div className='ms-auto'>
+                                            < Button className="mt-3" type="submit" variant="danger" style={{ marginTop: '0.5rem' }}>Remove</Button>
+                                        </div>
                                     </Form>
                                 </div>
                             </Row>

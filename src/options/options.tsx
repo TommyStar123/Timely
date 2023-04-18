@@ -177,7 +177,6 @@ class TrackForm extends React.Component<{}, domainsFormState> {
         } else {
             let newDoms = this.state.newDomains;
             this.updateActuallyTrackedDomains(newDoms);
-            this.setState(this.defaultState);
             this.setState({ newDomains: new Map() });
             this.setState({ domains: new Map([...this.state.domains, ...newDoms]) });
             this.setState({ errors: { 'success': 'Currently tracked domains list updated!' } });

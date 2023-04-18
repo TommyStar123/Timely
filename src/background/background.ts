@@ -32,9 +32,8 @@ chrome.runtime.onInstalled.addListener(async ({ reason }) => {
     await setVal("skipAmount", 0);
     await setVal("idleTime", 5);
   }
-  // await setVal("idleTime", 5);
-  // await setVal("allTabs", []);
   chrome.runtime.openOptionsPage();
+  // await setVal("allTabs", []);
   // await setVal("trackedDomains", []);
 })
 
@@ -124,7 +123,7 @@ chrome.tabs.onActivated.addListener(async function () {
       await setVal("skipAmount", skipAmount + (getTime() - skipStart));
     }
     tempTab.sec = getTime() - pastTime - await getVal("skipAmount");
-    if (tempTab.sec < await getVal("idleTime") * 60 * 60 * 1000) {
+    if (tempTab.sec < await getVal("idleTime") * 60 * 60) {
       await pushTab(tempTab);
     }
   }
@@ -151,7 +150,9 @@ chrome.tabs.onUpdated.addListener(async function (tabId, changeInfo, tab) {
         await setVal("skipAmount", skipAmount + (getTime() - skipStart));
       }
       tempTab.sec = getTime() - await getVal("pastTime") - await getVal("skipAmount");
-      await pushTab(tempTab);
+      if (tempTab.sec < await getVal("idleTime") * 60 * 60) {
+        await pushTab(tempTab);
+      }
     }
     await setVal("skipAmount", 0);
     await setVal("skipStart", -1);
